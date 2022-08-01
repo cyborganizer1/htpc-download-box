@@ -155,8 +155,8 @@ services:
       - TZ=${TZ} # timezone, defined in .env
     volumes:
       - ${CONFIG}/config/lidarr:/config # config files
-      - ${ROOTHDD}/complete/music:/music # music folder
-      - ${ROOTHDD}/downloads:/downloads # download shows folder
+      - ${ROOT}/complete/music:/music # music folder
+      - ${ROOT}/downloads:/downloads # download shows folder
 
   readarr:
     container_name: readarr
@@ -169,5 +169,5 @@ services:
       - TZ=${TZ} # timezone, defined in .env
     volumes:
       - ${CONFIG}/config/readarr:/config # config files
-      - ${ROOTHDD}/complete/books:/books # music folder
-      - ${ROOTHDD}/downloads:/downloads # download shows folder
+      - ${ROOT}/complete/books:/books # music folder
+      - ${ROOT}/downloads:/downloads # download shows folder
