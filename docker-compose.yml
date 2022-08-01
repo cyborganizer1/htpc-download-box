@@ -1,20 +1,37 @@
 version: "3.4"
 services:
-  vpn:
-    container_name: vpn
+  openvpn:
+    container_name: openvpn
     image: dperson/openvpn-client:latest
     cap_add:
       - net_admin # required to modify network interfaces
     restart: unless-stopped
     volumes:
       - /dev/net:/dev/net:z # tun device
-      - ${ROOT}/config/vpn:/vpn # OpenVPN configuration
+      - ${CONFIG}/config/vpn:/vpn # OpenVPN configuration
     security_opt:
       - label:disable
     ports:
+      - 9091:9091 # Transmission web UI
+      - 51413:51413 # Transmission bittorrent daemon
+      - 51413:51413/udp # Transmission bittorrent daemon
       - 8112:8112 # port for deluge web UI to be reachable from local network
+      - 8686:8686 # port for lidarr web UI
+      - 8787:8787  # port for redaar web UI
     command: '-f "" -r 192.168.1.0/24' # enable firewall and route local network traffic
 
+  transmission:
+    image: linuxserver/transmission:latest
+    container_name: transmission
+    restart: unless-stopped
+    network_mode: service:openvpn # run on the vpn network
+    environment:
+      - PUID=${PUID} # default user id, defined in .env
+      - PGID=${PGID} # default group id, defined in .env
+      - TZ=${TZ} # timezone, defined in .env
+    volumes:
+      - ${ROOT}/downloads:/downloads # downloads folder
+      - ${CONFIG}/config/transmission:/config # config files
   deluge:
     container_name: deluge
     image: linuxserver/deluge:latest
@@ -26,7 +43,7 @@ services:
       - TZ=${TZ} # timezone, defined in .env
     volumes:
       - ${ROOT}/downloads:/downloads # downloads folder
-      - ${ROOT}/config/deluge:/config # config files
+      - ${CONFIG}/config/deluge:/config # config files
 
   jackett:
     container_name: jackett
@@ -40,20 +57,20 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${ROOT}/downloads/torrent-blackhole:/downloads # place where to put .torrent files for manual download
-      - ${ROOT}/config/jackett:/config # config files
+      - ${CONFIG}/config/jackett:/config # config files
 
-  nzbget:
-    container_name: nzbget
-    image: linuxserver/nzbget:latest
-    restart: unless-stopped
-    network_mode: host
-    environment:
-      - PUID=${PUID} # default user id, defined in .env
-      - PGID=${PGID} # default group id, defined in .env
-      - TZ=${TZ} # timezone, defined in .env
-    volumes:
-      - ${ROOT}/downloads:/downloads # download folder
-      - ${ROOT}/config/nzbget:/config # config files
+  # nzbget:
+  #   container_name: nzbget
+  #   image: linuxserver/nzbget:latest
+  #   restart: unless-stopped
+  #   network_mode: host
+  #   environment:
+  #     - PUID=${PUID} # default user id, defined in .env
+  #     - PGID=${PGID} # default group id, defined in .env
+  #     - TZ=${TZ} # timezone, defined in .env
+  #   volumes:
+  #     - ${ROOT}/downloads:/downloads # download folder
+  #     - ${ROOT}/config/nzbget:/config # config files
 
   sonarr:
     container_name: sonarr
@@ -66,7 +83,7 @@ services:
       - TZ=${TZ} # timezone, defined in .env
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ${ROOT}/config/sonarr:/config # config files
+      - ${CONFIG}/config/sonarr:/config # config files
       - ${ROOT}/complete/tv:/tv # tv shows folder
       - ${ROOT}/downloads:/downloads # download folder
 
@@ -81,21 +98,36 @@ services:
       - TZ=${TZ} # timezone, defined in .env
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ${ROOT}/config/radarr:/config # config files
+      - ${CONFIG}/config/radarr:/config # config files
       - ${ROOT}/complete/movies:/movies # movies folder
       - ${ROOT}/downloads:/downloads # download folder
 
-  plex-server:
-    container_name: plex-server
-    image: plexinc/pms-docker:latest
+  # plex-server:
+  #   container_name: plex-server
+  #   image: plexinc/pms-docker:latest
+  #   restart: unless-stopped
+  #   environment:
+  #     - TZ=${TZ} # timezone, defined in .env
+  #   network_mode: host
+  #   volumes:
+  #     - ${ROOT}/config/plex/db:/config # plex database
+  #     - ${ROOT}/config/plex/transcode:/transcode # temp transcoded files
+  #     - ${ROOT}/complete:/data # media library
+
+  prowlarr:
+    container_name: prowlarr
+    image: linuxserver/prowlarr:nightly
     restart: unless-stopped
-    environment:
-      - TZ=${TZ} # timezone, defined in .env
     network_mode: host
+    environment:
+      - PUID=${PUID} # default user id, defined in .env
+      - PGID=${PGID} # default group id, defined in .env
+      - UMASK=002
+      - TZ=${TZ} # timezone, defined in .env
     volumes:
-      - ${ROOT}/config/plex/db:/config # plex database
-      - ${ROOT}/config/plex/transcode:/transcode # temp transcoded files
-      - ${ROOT}/complete:/data # media library
+      - /etc/localtime:/etc/localtime:ro
+      - ${CONFIG}/config/prowlarr:/config # config files
+      - ${ROOT}/downloads/torrent-blackhole:/downloads # place where to put .torrent files for manual download
 
   bazarr:
     container_name: bazarr
@@ -108,6 +140,34 @@ services:
       - TZ=${TZ} # timezone, defined in .env
       - UMASK_SET=022 #optional
     volumes:
-      - ${ROOT}/config/bazarr:/config # config files
+      - ${CONFIG}/config/bazarr:/config # config files
       - ${ROOT}/complete/movies:/movies # movies folder
       - ${ROOT}/complete/tv:/tv # tv shows folder
+
+  lidarr:
+    container_name: lidarr
+    image: linuxserver/lidarr:nightly
+    restart: unless-stopped
+    network_mode: ${NETWORKMODE}
+    environment:
+      - PUID=${PUID} # default user id, defined in .env
+      - PGID=${PGID} # default group id, defined in .env
+      - TZ=${TZ} # timezone, defined in .env
+    volumes:
+      - ${CONFIG}/config/lidarr:/config # config files
+      - ${ROOTHDD}/complete/music:/music # music folder
+      - ${ROOTHDD}/downloads:/downloads # download shows folder
+
+  readarr:
+    container_name: readarr
+    image: linuxserver/readarr:nightly
+    restart: unless-stopped
+    network_mode: ${NETWORKMODE}
+    environment:
+      - PUID=${PUID} # default user id, defined in .env
+      - PGID=${PGID} # default group id, defined in .env
+      - TZ=${TZ} # timezone, defined in .env
+    volumes:
+      - ${CONFIG}/config/readarr:/config # config files
+      - ${ROOTHDD}/complete/books:/books # music folder
+      - ${ROOTHDD}/downloads:/downloads # download shows folder
