@@ -16,8 +16,6 @@ services:
       - 51413:51413 # Transmission bittorrent daemon
       - 51413:51413/udp # Transmission bittorrent daemon
       - 8112:8112 # port for deluge web UI to be reachable from local network
-      - 8686:8686 # port for lidarr web UI
-      - 8787:8787  # port for redaar web UI
     command: '-f "" -r 192.168.1.0/24' # enable firewall and route local network traffic
 
   transmission:
@@ -60,7 +58,7 @@ services:
       - ${CONFIG}/config/jackett:/config # config files
     ports:
       - 9117:9117
-      
+
   # nzbget:
   #   container_name: nzbget
   #   image: linuxserver/nzbget:latest
@@ -88,7 +86,8 @@ services:
       - ${CONFIG}/config/sonarr:/config # config files
       - ${ROOT}/complete/tv:/tv # tv shows folder
       - ${ROOT}/downloads:/downloads # download folder
-
+    ports:
+      - 8989:8989
   radarr:
     container_name: radarr
     image: linuxserver/radarr:latest
@@ -103,6 +102,8 @@ services:
       - ${CONFIG}/config/radarr:/config # config files
       - ${ROOT}/complete/movies:/movies # movies folder
       - ${ROOT}/downloads:/downloads # download folder
+    ports:
+      - 7878:7878
 
   # plex-server:
   #   container_name: plex-server
@@ -130,7 +131,8 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ${CONFIG}/config/prowlarr:/config # config files
       - ${ROOT}/downloads/torrent-blackhole:/downloads # place where to put .torrent files for manual download
-
+    ports:
+      - 9696:9696
   bazarr:
     container_name: bazarr
     image: linuxserver/bazarr
@@ -159,7 +161,8 @@ services:
       - ${CONFIG}/config/lidarr:/config # config files
       - ${ROOT}/complete/music:/music # music folder
       - ${ROOT}/downloads:/downloads # download shows folder
-
+    ports:
+      - 6767:6767
   readarr:
     container_name: readarr
     image: linuxserver/readarr:nightly
@@ -173,3 +176,5 @@ services:
       - ${CONFIG}/config/readarr:/config # config files
       - ${ROOT}/complete/books:/books # music folder
       - ${ROOT}/downloads:/downloads # download shows folder
+    ports:
+      - 8787:8787
