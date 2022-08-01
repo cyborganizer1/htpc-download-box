@@ -58,7 +58,9 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ${ROOT}/downloads/torrent-blackhole:/downloads # place where to put .torrent files for manual download
       - ${CONFIG}/config/jackett:/config # config files
-
+    ports:
+      - 9117:9117
+      
   # nzbget:
   #   container_name: nzbget
   #   image: linuxserver/nzbget:latest
