@@ -162,7 +162,7 @@ services:
       - ${ROOT}/complete/music:/music # music folder
       - ${ROOT}/downloads:/downloads # download shows folder
     ports:
-      - 6767:6767
+      - 8686:8686
   readarr:
     container_name: readarr
     image: linuxserver/readarr:nightly
