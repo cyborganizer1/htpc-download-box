@@ -22,7 +22,7 @@ services:
     image: linuxserver/transmission:latest
     container_name: transmission
     restart: unless-stopped
-    network_mode: service:openvpn # run on the vpn network
+    network_mode: ${NETWORKMODE} # run on the vpn network
     environment:
       - PUID=${PUID} # default user id, defined in .env
       - PGID=${PGID} # default group id, defined in .env
@@ -39,7 +39,7 @@ services:
     container_name: deluge
     image: linuxserver/deluge:latest
     restart: unless-stopped
-    network_mode: service:openvpn # run on the vpn network
+    network_mode: ${NETWORKMODE} # run on the vpn network
     environment:
       - PUID=${PUID} # default user id, defined in .env
       - PGID=${PGID} # default group id, defined in .env
@@ -96,7 +96,7 @@ services:
       - ${ROOT}/downloads:/downloads # download folder
     ports:
       - 8989:8989
-      
+
   radarr:
     container_name: radarr
     image: linuxserver/radarr:latest
