@@ -153,7 +153,7 @@ services:
     container_name: lidarr
     image: linuxserver/lidarr:nightly
     restart: unless-stopped
-    # network_mode: ${NETWORKMODE}
+    network_mode: host
     environment:
       - PUID=${PUID} # default user id, defined in .env
       - PGID=${PGID} # default group id, defined in .env
@@ -168,7 +168,7 @@ services:
     container_name: readarr
     image: linuxserver/readarr:nightly
     restart: unless-stopped
-    # network_mode: ${NETWORKMODE}
+    network_mode: host
     environment:
       - PUID=${PUID} # default user id, defined in .env
       - PGID=${PGID} # default group id, defined in .env
