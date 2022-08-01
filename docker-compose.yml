@@ -28,7 +28,7 @@ services:
       - PGID=${PGID} # default group id, defined in .env
       - TZ=${TZ} # timezone, defined in .env
     volumes:
-      - ${ROOT}/downloads:/downloads # downloads folder
+      - ${ROOT}/downloads:/downloads # downlds folder
       - ${CONFIG}/config/transmission:/config # config files
     ports:
       - 9091:9091 # Transmission web UI
@@ -188,3 +188,25 @@ services:
       - ${ROOT}/downloads:/downloads # download shows folder
     ports:
       - 8787:8787
+
+  flame:
+    image: pawelmalak/flame
+    container_name: flame
+    volumes:
+      - ${CONFIG}/config/flame:/config
+      # - /path/to/host/data:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock # optional but required for Docker integration
+    ports:
+      - 5005:5005
+    # secrets:
+    #   - password # optional but required for (1)
+    # environment:
+    #   - PASSWORD=flame_password
+    #   - PASSWORD_FILE=/run/secrets/password # optional but required for (1)
+    restart: unless-stopped
+
+# # optional but required for Docker secrets (1)
+# secrets:
+#   password:
+#     file: /path/to/secrets/password
+
